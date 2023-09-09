@@ -166,14 +166,14 @@ object Util {
 
     fun getStorageDetails(context: Context) = HashMap<String,Long>().apply {
         val im = getInternalMemoryDetails()
-        set("Available Internal Memory",im.first)
-        set("Total Internal Memory",im.second)
-        val em = getExternalMemoryDetails()
-        set("Available External Memory",em.first)
-        set("Total External Memory", em.second)
+        set("AIM",im.first)
+        set("TIM",im.second)
+        /*val em = getExternalMemoryDetails()
+        set("AEM",em.first)
+        set("TEM", em.second)*/
         val rm = getRamDetails(context)
-        set("Available RAM",rm.first)
-        set("Total RAM",rm.second)
+        set("ARAM",rm.first)
+        set("TRAM",rm.second)
     }
 
     private fun getRamDetails(context: Context): Pair<Long,Long> {

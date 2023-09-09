@@ -9,18 +9,21 @@ val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "de
 
 fun Long.formatSize(): String {
     var suffix = ""
+    var decimal = 0
     var size = this
     if (size >= 1024) {
-        suffix="KB"
+        suffix=" KB"
         size /= 1024
         if (size >= 1024) {
-            suffix = "MB"
+            suffix = " MB"
             size /= 1024
             if (size>=1024) {
-                suffix = "GB"
+                suffix = " GB"
+                decimal = (size%1024).toInt()
                 size /= 1024
                 if (size >= 1024) {
-                    suffix = "TB"
+                    suffix = " TB"
+                    decimal = (size%1024).toInt()
                     size /= 1024
                 }
             }
@@ -32,6 +35,7 @@ fun Long.formatSize(): String {
         rb.insert(commaOffset, ',')
         commaOffset -= 3
     }
+    rb.append(".").append(decimal%100)
     if (suffix.isNotEmpty()) rb.append(suffix)
     return rb.toString()
 }
