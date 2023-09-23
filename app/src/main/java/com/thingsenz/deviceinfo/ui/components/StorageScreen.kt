@@ -5,6 +5,7 @@ import android.widget.Toast
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -58,8 +59,8 @@ fun StorageScreen() {
                         .height(140.dp)
                         .padding(start = 40.dp), verticalArrangement = Arrangement.Center
                 ) {
-                    Text(text = "Free Memory: ${list["AIM"]?.formatSize()}", fontSize = 18.sp)
-                    Text(text = "Total Memory: ${list["TIM"]?.formatSize()}", fontSize = 18.sp)
+                    Text(text = "Free Memory: ${list["AIM"]?.formatSize()}", fontSize = 18.sp, color = getTextColor())
+                    Text(text = "Total Memory: ${list["TIM"]?.formatSize()}", fontSize = 18.sp, color = getTextColor())
                 }
             }
         }
@@ -79,8 +80,8 @@ fun StorageScreen() {
                         .height(140.dp)
                         .padding(start = 40.dp), verticalArrangement = Arrangement.Center
                 ) {
-                    Text(text = "Free Memory: ${list["ARAM"]?.formatSize()}", fontSize = 18.sp)
-                    Text(text = "Total Memory: ${list["TRAM"]?.formatSize()}", fontSize = 18.sp)
+                    Text(text = "Free Memory: ${list["ARAM"]?.formatSize()}", fontSize = 18.sp, color = getTextColor())
+                    Text(text = "Total Memory: ${list["TRAM"]?.formatSize()}", fontSize = 18.sp, color = getTextColor())
                 }
             }
         }
@@ -168,3 +169,6 @@ private fun DisplayText(
         Text(text = "Used")
     }
 }
+
+@Composable
+private fun getTextColor() = if (isSystemInDarkTheme()) Color.White else Color.Black
