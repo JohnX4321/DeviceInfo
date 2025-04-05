@@ -1,5 +1,6 @@
 package com.thingsenz.devinfo
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -30,59 +31,67 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
-import com.thingsenz.devinfo.ui.SettingsActivity
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+
 import com.thingsenz.devinfo.ui.components.TabItem
+import com.thingsenz.devinfo.ui.nav.NavigationStack
+import com.thingsenz.devinfo.ui.nav.Screen
 import com.thingsenz.devinfo.ui.theme.DevInfoTheme
 
 class MainActivity : ComponentActivity() {
-    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
 
             DevInfoTheme {
-                Scaffold(modifier = Modifier.fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection),
-                    topBar = {
-                        TopAppBar(
-                            title = {
-                                Text(stringResource(R.string.app_name),
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis)
-                            },
-                            colors = TopAppBarDefaults.topAppBarColors(
-                                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                titleContentColor = MaterialTheme.colorScheme.primary
-                            ),
-                            actions = {
-                                IconButton(onClick = {
-                                    launchSettings()
-                                }) {
-                                    Icon(
-                                        imageVector = Icons.Filled.Settings,
-                                        contentDescription = "Settings"
-                                    )
-                                }
-                            },
-                            scrollBehavior = scrollBehavior
-                        )
-                    },
-                    ) { innerPadding ->
-                    Tabs(tabs = listOf(TabItem.Device,TabItem.Software,TabItem.SOC, TabItem.Storage,
-                        TabItem.Display), padding = innerPadding)
-                }
+                NavigationStack()
             }
         }
     }
 
-    private fun launchSettings() {
-        startActivity(Intent(this,SettingsActivity::class.java).apply {
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        })
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun HomeScreen(navController: NavController) {
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+    val context = LocalContext.current
+    Scaffold(modifier = Modifier.fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection),
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(stringResource(R.string.app_name),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis)
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    titleContentColor = MaterialTheme.colorScheme.primary
+                ),
+                actions = {
+                    IconButton(onClick = {
+                        //launchSettings(context)
+                        navController.navigate(Screen.Settings.route)
+                    }) {
+                        Icon(
+                            imageVector = Icons.Filled.Settings,
+                            contentDescription = "Settings"
+                        )
+                    }
+                },
+                scrollBehavior = scrollBehavior
+            )
+        },
+    ) { innerPadding ->
+        Tabs(tabs = listOf(TabItem.Device,TabItem.Software,TabItem.SOC, TabItem.Storage,
+            TabItem.Display), padding = innerPadding)
     }
+
 }
 
 @Composable

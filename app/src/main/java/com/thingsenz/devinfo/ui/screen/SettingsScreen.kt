@@ -1,11 +1,6 @@
-package com.thingsenz.devinfo.ui
+package com.thingsenz.devinfo.ui.screen
 
 import android.content.Context
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -20,13 +15,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -41,63 +33,55 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.thingsenz.devinfo.R
-import com.thingsenz.devinfo.Tabs
-import com.thingsenz.devinfo.ui.components.TabItem
-import com.thingsenz.devinfo.ui.theme.DevInfoTheme
+import com.thingsenz.devinfo.ui.nav.Screen
 import com.thingsenz.devinfo.utils.Prefs
 
-class SettingsActivity: ComponentActivity() {
 
-    @OptIn(ExperimentalMaterial3Api::class)
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
-            val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
-            DevInfoTheme {
-                Scaffold(modifier = Modifier.fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection),
-                    topBar = {
-                        TopAppBar(
-                            title = {
-                                Text(
-                                    stringResource(R.string.app_name),
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis)
-                            },
-                            colors = TopAppBarDefaults.topAppBarColors(
-                                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                titleContentColor = MaterialTheme.colorScheme.primary
-                            ),
-                            scrollBehavior = scrollBehavior,
-                            navigationIcon = {
-                                IconButton(onClick = {
-                                    finish()
-                                }) {
-                                    Icon(
-                                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                        contentDescription = "Back"
-                                    )
-                                }
-                            }
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SettingsScreen(navController: NavController) {
+
+    val context = LocalContext.current
+    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+
+    Scaffold(modifier = Modifier.fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection),
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        stringResource(R.string.settings),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis)
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    titleContentColor = MaterialTheme.colorScheme.primary
+                ),
+                scrollBehavior = scrollBehavior,
+                navigationIcon = {
+                    IconButton(onClick = {
+                        navController.popBackStack()
+                    }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back"
                         )
-                    },
-                ) { innerPadding ->
-                    Box(modifier = Modifier.padding(vertical = innerPadding.calculateTopPadding(), horizontal = innerPadding.calculateLeftPadding(LayoutDirection.Ltr))) {
-                        SettingsScreen(this@SettingsActivity)
                     }
                 }
-            }
+            )
+        },
+    ) { innerPadding ->
+        Box(modifier = Modifier.padding(vertical = innerPadding.calculateTopPadding(), horizontal = innerPadding.calculateLeftPadding(LayoutDirection.Ltr))) {
+            SettingsScreenContent(context, navController)
         }
     }
 
@@ -105,7 +89,7 @@ class SettingsActivity: ComponentActivity() {
 
 
 @Composable
-fun SettingsScreen(context: Context) {
+fun SettingsScreenContent(context: Context, navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -156,7 +140,7 @@ fun SettingsScreen(context: Context) {
                     horizontal = 15.dp
                 )
                 .clickable {
-
+                    navController.navigate(Screen.Libraries.route)
                 },
             verticalAlignment = Alignment.CenterVertically
         ) {

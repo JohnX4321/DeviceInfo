@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">DeviceInfo</string>
+    <string name="settings">Settings</string>
+    <string name="about_libraries">About Libraries</string>
 </resources>

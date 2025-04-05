@@ -1,4 +1,4 @@
-package com.thingsenz.devinfo.ui.components
+package com.thingsenz.devinfo.ui.screen
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween

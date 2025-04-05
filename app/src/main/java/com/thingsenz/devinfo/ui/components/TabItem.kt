@@ -1,6 +1,11 @@
 package com.thingsenz.devinfo.ui.components
 
 import androidx.compose.runtime.Composable
+import com.thingsenz.devinfo.ui.screen.DeviceScreen
+import com.thingsenz.devinfo.ui.screen.DisplayScreen
+import com.thingsenz.devinfo.ui.screen.SocScreen
+import com.thingsenz.devinfo.ui.screen.SoftwareScreen
+import com.thingsenz.devinfo.ui.screen.StorageScreen
 
 sealed class TabItem(var icon: Int, var title: String, var layout: @Composable ()->Unit) {
     data object Device : TabItem(0,"Device", { DeviceScreen() })
