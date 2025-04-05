@@ -1,5 +1,6 @@
 package com.thingsenz.devinfo
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -25,14 +26,13 @@ import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
+import com.thingsenz.devinfo.ui.SettingsActivity
 import com.thingsenz.devinfo.ui.components.TabItem
 import com.thingsenz.devinfo.ui.theme.DevInfoTheme
 
@@ -43,6 +43,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior(rememberTopAppBarState())
+
             DevInfoTheme {
                 Scaffold(modifier = Modifier.fillMaxSize().nestedScroll(scrollBehavior.nestedScrollConnection),
                     topBar = {
@@ -58,7 +59,7 @@ class MainActivity : ComponentActivity() {
                             ),
                             actions = {
                                 IconButton(onClick = {
-                                    //launchSettings()
+                                    launchSettings()
                                 }) {
                                     Icon(
                                         imageVector = Icons.Filled.Settings,
@@ -75,6 +76,12 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    private fun launchSettings() {
+        startActivity(Intent(this,SettingsActivity::class.java).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        })
     }
 }
 

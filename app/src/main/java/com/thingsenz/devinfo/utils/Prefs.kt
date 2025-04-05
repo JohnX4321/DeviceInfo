@@ -11,6 +11,7 @@ object Prefs {
     private const val GPU_VERSION = "gpu_version"
     private const val GPU_EXT = "gpu_extensions"
     private const val FIRST_RUN = "first_run"
+    private const val CPU_FREQ_ENABLED = "cpuFreqEnabled"
 
 
     fun setGPURenderer(context: Context,value: String) {
@@ -53,9 +54,20 @@ object Prefs {
             .getString(GPU_EXT, "") ?: ""
     }
 
+    fun getShouldShowCoreFreq(context: Context): Boolean {
+        return PreferenceManager.getDefaultSharedPreferences(context)
+            .getBoolean(CPU_FREQ_ENABLED, false)
+    }
+
+    fun setShouldShowCoreFreq(context: Context, value: Boolean){
+        PreferenceManager.getDefaultSharedPreferences(context)
+            .edit { putBoolean(CPU_FREQ_ENABLED, value) }
+    }
+
+
     fun isFirstRun(context: Context): Boolean {
         return PreferenceManager.getDefaultSharedPreferences(context)
-            .getBoolean(FIRST_RUN,false)
+            .getBoolean(FIRST_RUN,true)
     }
 
     fun setFirstRun(context: Context,value: Boolean) {

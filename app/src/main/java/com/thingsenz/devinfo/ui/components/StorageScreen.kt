@@ -12,8 +12,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
@@ -43,21 +43,22 @@ fun StorageScreen() {
     val list = Util.getStorageDetails(LocalContext.current)
     Column(modifier = Modifier.padding(top = 20.dp, start = 20.dp)) {
         if (list.containsKey("AIM") && list.containsKey("TIM")) {
-            Text(text = "Internal Memory")
+            Text(text = "Internal Memory",)
             Row {
                 CircularProgressBar(
                     progress = getPercentageUsed(
                         list["AIM"] ?: 0,
                         list["TIM"] ?: 0
-                    )
+                    ),
+                    foregroundIndicatorColor = MaterialTheme.colorScheme.inversePrimary
                 )
                 Column(
                     modifier = Modifier
                         .height(140.dp)
                         .padding(start = 40.dp), verticalArrangement = Arrangement.Center
                 ) {
-                    Text(text = "Free Memory: ${list["AIM"]?.formatSize()}", fontSize = 18.sp, color = getTextColor())
-                    Text(text = "Total Memory: ${list["TIM"]?.formatSize()}", fontSize = 18.sp, color = getTextColor())
+                    Text(text = "Free Memory:\n ${list["AIM"]?.formatSize()}", fontSize = 18.sp, color = getTextColor())
+                    Text(text = "Total Memory:\n ${list["TIM"]?.formatSize()}", fontSize = 18.sp, color = getTextColor())
                 }
             }
         }
@@ -70,15 +71,16 @@ fun StorageScreen() {
                     progress = getPercentageUsed(
                         list["ARAM"] ?: 0,
                         list["TRAM"] ?: 0
-                    )
+                    ),
+                    foregroundIndicatorColor = MaterialTheme.colorScheme.inversePrimary
                 )
                 Column(
                     modifier = Modifier
                         .height(140.dp)
                         .padding(start = 40.dp), verticalArrangement = Arrangement.Center
                 ) {
-                    Text(text = "Free Memory: ${list["ARAM"]?.formatSize()}", fontSize = 18.sp, color = getTextColor())
-                    Text(text = "Total Memory: ${list["TRAM"]?.formatSize()}", fontSize = 18.sp, color = getTextColor())
+                    Text(text = "Free Memory:\n ${list["ARAM"]?.formatSize()}", fontSize = 18.sp, color = getTextColor())
+                    Text(text = "Total Memory:\n ${list["TRAM"]?.formatSize()}", fontSize = 18.sp, color = getTextColor())
                 }
             }
         }
@@ -94,9 +96,9 @@ private fun getPercentageUsed(a: Long, b: Long): Float {
 
 @Composable
 fun CircularProgressBar(progress: Float,size: Dp = 150.dp,
-                        foregroundIndicatorColor: Color = MaterialTheme.colors.onSurface,
+                        foregroundIndicatorColor: Color = MaterialTheme.colorScheme.onSurface,
                         shadowColor: Color = Color.LightGray, indicatorThickness: Dp = 10.dp,
-                        animDuration: Int = 1000, dataTextStyle: TextStyle = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = MaterialTheme.typography.h3.fontSize),
+                        animDuration: Int = 1000, dataTextStyle: TextStyle = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = MaterialTheme.typography.headlineMedium.fontSize),
                         remainingTextStyle: TextStyle = TextStyle(
                             fontFamily = FontFamily.Cursive,
                             fontSize = 16.sp
@@ -161,9 +163,9 @@ private fun DisplayText(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = (animateNumber.value).toInt().toString()+" %", style = dataTextStyle)
+        Text(text = (animateNumber.value).toInt().toString()+" %", style = dataTextStyle, color = MaterialTheme.colorScheme.inversePrimary)
         Spacer(modifier = Modifier.height(2.dp))
-        Text(text = "Used")
+        Text(text = "Used",  color = MaterialTheme.colorScheme.inversePrimary)
     }
 }
 

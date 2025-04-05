@@ -54,6 +54,8 @@ dependencies {
     implementation(libs.accompanist.pager) // Pager
     implementation(libs.accompanist.pager.indicators) // Pager Indicators
 
+    implementation(libs.aboutlibraries.compose.m3)
+    //implementation(libs.aboutlibraries.legacy)
 
     implementation(libs.androidx.preference.ktx)
     implementation(libs.androidx.datastore.preferences)

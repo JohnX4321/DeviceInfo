@@ -15,10 +15,13 @@ import android.os.Environment
 import android.os.StatFs
 import android.os.SystemClock
 import android.provider.Settings
+import android.util.DisplayMetrics
 import android.util.Log
 import android.view.Display.HdrCapabilities
 import java.io.BufferedReader
+import java.io.File
 import java.io.FileReader
+import java.io.RandomAccessFile
 import java.math.RoundingMode
 import java.text.NumberFormat
 import java.util.Locale
@@ -26,9 +29,9 @@ import java.util.TimeZone
 import java.util.concurrent.TimeUnit
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
-import kotlin.math.ceil
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.pow
-import kotlin.math.round
 import kotlin.math.sqrt
 
 object Util {
@@ -43,7 +46,6 @@ object Util {
         set("Board",Build.BOARD)
         set("Bootloader",Build.BOOTLOADER)
         set("Device Name",Build.DEVICE)
-        set("Hardware",Build.HARDWARE)
         if (isS()) {
             if (!Build.ODM_SKU.equals("unknown",ignoreCase = true)) {
                 set("ODM_SKU", Build.ODM_SKU)
@@ -110,57 +112,98 @@ object Util {
 
     fun getSOCDetails(context: Context) = HashMap<String,String>().apply {
         if (isS()) {
-            set("SOC", Build.SOC_MODEL)
-            set("SOC Manufacturer Code", Build.SOC_MANUFACTURER)
+            set("SOC",Build.SOC_MANUFACTURER + " " + Build.SOC_MODEL)
         }
         Build.SUPPORTED_ABIS.apply {
             val sb = StringBuilder()
             for (i in this)
                 sb.append(i).append(',')
-            set("ABIS",sb.toString())
+            set("ABIS",sb.removeSuffix(",").toString())
         }
+        set("Hardware",Build.HARDWARE)
         set("Architecture", System.getProperty("os.arch") ?: Build.UNKNOWN)
         val br = BufferedReader(FileReader("/proc/cpuinfo"))
         val s=br.readLines()
         for (i in s) {
-            Log.d("TAGX",i)
+            //Log.d("TAGX",i)
             if (i.contains("processor"))
-                this["Processor"] = i.replace("processor\t:","")
+                this["Cores"] = (this.getOrDefault("Cores","0").toInt() + 1).toString()
             else if (i.contains("vendor_id"))
                 this["Vendor"] = i.replace("vendor_id:","")
             else if (i.contains("Hardware"))
                 this["Manufacturer"] = i.replace("Hardware\t:","")
         }
-        if (Prefs.getGPUVersion(context).isNotEmpty()) {
-            set("GPU Renderer", Prefs.getGPURenderer(context))
-            set("GPU Vendor", Prefs.getGPUVendor(context))
-            set("GPU Version", Prefs.getGPUVersion(context))
-            set("GPU Extensions", Prefs.getGPUExtension(context))
+        getCPUMaxFreq(this["Cores"]?.toIntOrNull() ?: 0).let {
+            if (it.isNotEmpty()) {
+                //Range
+                val sb = StringBuilder()
+                for (i in it.entries) {
+                    val arr = i.key.split(",")
+                    val keyFormat = "${arr[0]} MHz - ${arr[1]} MHz"
+                    sb.appendLine("${i.value} x $keyFormat")
+                }
+                this["CPU Frequencies"] = sb.removeSuffix("\n").toString()
+            }
         }
+        getCPUGovernor().let {
+            if (it.isNotEmpty()) {
+                set("CPU Governor", it)
+            }
+        }
+        Prefs.getGPUVendor(context).let {
+            if (it.isNotEmpty()){
+                set("GPU Vendor", it)
+            }
+        }
+        Prefs.getGPUVersion(context).let {
+            if (it.isNotEmpty()){
+                set("GPU Version", it)
+            }
+        }
+        Prefs.getGPURenderer(context).let {
+            if (it.isNotEmpty()){
+                set("GPU Renderer", it)
+            }
+        }
+
 
     }
 
-    fun getCPUDetails(): HashMap<String,String> {
-        val map = HashMap<String,String>()
-
-        val br = BufferedReader(FileReader("/proc/cpuinfo"))
-        val s=br.readLines()
-        for (i in s) {
-            if (i.contains("processor"))
-                map["Processor"] = i.replace("processor:","")
-            else if (i.contains("vendor_id"))
-                map["Vendor"] = i.replace("vendor_id:","")
-            else if (i.contains("model"))
-                map["Model"] = i.replace("model:","")
+    private fun getCPUGovernor(): String {
+        val govFile = File("/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor","r")
+        var res = ""
+        if (govFile.exists()) {
+            kotlin.runCatching {
+                govFile.bufferedReader().use {
+                    res = it.readLine()
+                }
+            }
         }
-        return map
+        return res
+    }
+
+
+    private fun getCPUMaxFreq(cores: Int) = HashMap<String,String>().apply {
+
+        for (i in 0 until cores) {
+            val readerMax = RandomAccessFile("/sys/devices/system/cpu/cpu$i/cpufreq/cpuinfo_max_freq","r")
+            val readerMin = RandomAccessFile("/sys/devices/system/cpu/cpu$i/cpufreq/cpuinfo_min_freq","r")
+            val maxFreq = (readerMax.readLine().toInt()/1000).toString()
+            val minFreq = (readerMin.readLine().toInt()/1000).toString()
+            val keyFormat ="$minFreq,$maxFreq"
+            set(keyFormat, (this.getOrDefault(keyFormat,"0").toInt() + 1).toString())
+        }
+
     }
 
     fun getDisplayDetails(context: Context) = LinkedHashMap<String,String>().apply {
         val dm = Resources.getSystem().displayMetrics
-        set("Resolution",dm.heightPixels.toString()+"x"+dm.widthPixels.toString())
-        set("Dpi",dm.densityDpi.toString())
-        set("Size", getDisplayInches(dm.widthPixels,dm.heightPixels,dm.xdpi,dm.ydpi).toString())
+        set("Resolution",dm.heightPixels.toString()+"x"+dm.widthPixels.toString() + "\n(${getDisplayResolutionSlab(
+            max(dm.widthPixels,dm.heightPixels),
+            min(dm.widthPixels,dm.heightPixels)
+        )})")
+        set("Density", "${dm.densityDpi} (${getDisplayDensitySlab(dm.densityDpi)})")
+        set("Size", getDisplayInches(dm.widthPixels,dm.heightPixels,dm.xdpi,dm.ydpi))
         set("Scale",context.resources.configuration.fontScale.toString())
         set("Refresh Rate",getRefreshRate(context))
         set("HDR Supported",isHDRSupported(context).toString())
@@ -168,6 +211,31 @@ object Util {
         set("Orientation",getOrientation(context))
         set("Brightness", getBrightness(context))
     }
+
+    private fun getDisplayResolutionSlab(maxPixels: Int, minPixels: Int) : String =
+        when {
+            maxPixels <= 480 -> "SD"
+            maxPixels <= 720 -> "HD"
+            maxPixels <= 1080 || minPixels <= 1080 -> {
+                if (maxPixels > 1920) "FHD+"
+                else "FHD"
+            }
+            maxPixels <= 1440 -> "QHD"
+            maxPixels <= 2160 -> "UHD"
+            else -> "Unknown"
+        }
+
+    private fun getDisplayDensitySlab(dpi: Int): String =
+        when {
+            dpi <= DisplayMetrics.DENSITY_LOW -> "ldpi"
+            dpi <= DisplayMetrics.DENSITY_MEDIUM -> "mdpi"
+            dpi <= DisplayMetrics.DENSITY_TV -> "tvdpi"
+            dpi <= DisplayMetrics.DENSITY_HIGH -> "hdpi"
+            dpi <= DisplayMetrics.DENSITY_XHIGH -> "xhdpi"
+            dpi <= DisplayMetrics.DENSITY_XXHIGH -> "xxhdpi"
+            dpi <= DisplayMetrics.DENSITY_XXXHIGH -> "xxxhdpi"
+            else -> "unknown"
+        }
 
     private fun getBrightness(context: Context): String {
         val sb = StringBuilder()
