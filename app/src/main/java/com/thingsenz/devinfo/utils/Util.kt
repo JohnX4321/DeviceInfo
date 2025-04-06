@@ -8,6 +8,7 @@ import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.hardware.display.DisplayManager
+import android.media.MediaDrm
 import android.opengl.GLSurfaceView
 import android.opengl.GLSurfaceView.Renderer
 import android.os.Build
@@ -92,6 +93,8 @@ object Util {
         "Kernel Version" to getKernelVersion(),
         "OpenGL ES Version" to getOpenGLESVersion(context),
         "Vulkan" to getVulkanSupportVersion(context),
+
+        //TODO(Display Custom UI Versions)
 
     )
 
@@ -210,6 +213,12 @@ object Util {
         set("HDR Modes", getHdrCapabilities(context))
         set("Orientation",getOrientation(context))
         set("Brightness", getBrightness(context))
+        DrmUtils.getDrmInfo().let {
+            if (it.isNotEmpty()) {
+                putAll(it)
+            }
+        }
+
     }
 
     private fun getDisplayResolutionSlab(maxPixels: Int, minPixels: Int) : String =
@@ -328,28 +337,6 @@ object Util {
         return f.firstOrNull { it.getInt(Build.VERSION_CODES::class) == Build.VERSION.SDK_INT }?.name ?: Build.UNKNOWN.uppercase()
     }
 
-    fun fetchAndStoreGPUDetails(context: Activity): GLSurfaceView {
-        val glSurfaceView = GLSurfaceView(context)
-        glSurfaceView.setRenderer(object : Renderer {
-            override fun onSurfaceCreated(p0: GL10?, p1: EGLConfig?) {
-                p0?.glGetString(GL10.GL_RENDERER)?.let { Prefs.setGPURenderer(context, it) }
-                p0?.glGetString(GL10.GL_VENDOR)?.let { Prefs.setGPUVendor(context, it) }
-                p0?.glGetString(GL10.GL_VERSION)?.let { Prefs.setGPUVersion(context, it) }
-                p0?.glGetString(GL10.GL_EXTENSIONS)?.let { Prefs.setGPUExtension(context, it) }
-                Log.d("IMPX", Prefs.getGPUVendor(context))
-                context.finish()
-            }
-
-            override fun onSurfaceChanged(p0: GL10?, p1: Int, p2: Int) {
-
-            }
-
-            override fun onDrawFrame(p0: GL10?) {
-
-            }
-        })
-        return glSurfaceView
-    }
 
     fun getStorageDetails(context: Context) = HashMap<String,Long>().apply {
         val im = getInternalMemoryDetails()
@@ -395,6 +382,5 @@ object Util {
         } else "Unsupported"
     }
 
-    //TODO(DRM)
 
 }
