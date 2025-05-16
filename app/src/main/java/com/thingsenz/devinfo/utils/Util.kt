@@ -1,24 +1,20 @@
 package com.thingsenz.devinfo.utils
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.app.ActivityManager
 import android.content.Context
 import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.hardware.display.DisplayManager
-import android.media.MediaDrm
-import android.opengl.GLSurfaceView
-import android.opengl.GLSurfaceView.Renderer
 import android.os.Build
 import android.os.Environment
 import android.os.StatFs
 import android.os.SystemClock
 import android.provider.Settings
 import android.util.DisplayMetrics
-import android.util.Log
 import android.view.Display.HdrCapabilities
+import androidx.compose.runtime.snapshots.SnapshotStateMap
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
@@ -28,8 +24,6 @@ import java.text.NumberFormat
 import java.util.Locale
 import java.util.TimeZone
 import java.util.concurrent.TimeUnit
-import javax.microedition.khronos.egl.EGLConfig
-import javax.microedition.khronos.opengles.GL10
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
@@ -195,6 +189,18 @@ object Util {
             val minFreq = (readerMin.readLine().toInt()/1000).toString()
             val keyFormat ="$minFreq,$maxFreq"
             set(keyFormat, (this.getOrDefault(keyFormat,"0").toInt() + 1).toString())
+        }
+
+    }
+
+    fun getCPUCurrFreqs(cores: Int, cpuCurrFreqMap: SnapshotStateMap<String, String>) = cpuCurrFreqMap.apply {
+        clear()
+
+        for (i in 0 until cores) {
+            val readerMax = RandomAccessFile("/sys/devices/system/cpu/cpu$i/cpufreq/scaling_cur_freq","r")
+            val currFreq = (readerMax.readLine().toInt()/1000).toString()
+            val keyFormat ="Core $i"
+            set(keyFormat, currFreq)
         }
 
     }
